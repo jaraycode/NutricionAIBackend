@@ -1,8 +1,8 @@
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
-from core.app.Config.db import conn
-from core.app.core.users.Routes import router as user
+from src.app.Config.db import conn
+from src.app.core.users.Routes import router as user
 import uvicorn
 
 def init_app() -> FastAPI:
