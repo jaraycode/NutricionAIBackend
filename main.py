@@ -2,6 +2,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from core.app.Config.db import conn
+from core.app.core.users.Routes import router as user
 import uvicorn
 
 def init_app() -> FastAPI:
@@ -19,6 +20,7 @@ def init_app() -> FastAPI:
     def home() -> str:
         return "Nutricion Backend"
 
+    app.include_router(user)
     return app
 
 app = init_app()
