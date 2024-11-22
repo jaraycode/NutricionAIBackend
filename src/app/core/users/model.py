@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from datetime import date
+from datetime import datetime
 
 class User(BaseModel):
     user_id: int
@@ -7,4 +7,11 @@ class User(BaseModel):
     last_name: str
     email: str
     password: str
-    birth_date: date
+    # birth_date: datetime
+
+class User_payload(BaseModel):
+    name: str
+    last_name: str
+    email: str
+    password: str
+    birth_date: datetime

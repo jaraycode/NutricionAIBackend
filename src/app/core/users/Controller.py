@@ -1,8 +1,9 @@
 from .model import User
-from prisma.errors import RecordNotFoundError, ClientAlreadyRegisteredError
+from prisma.errors import RecordNotFoundError
 from datetime import datetime
 from ...Utils.auth import encryptPassword
 from ...Config.db import conn
+import json
 
 class UserController:
     @staticmethod
@@ -32,17 +33,14 @@ class UserController:
     @staticmethod
     async def create(data: User) -> None:
         try:
-            user_exists = await UserController.get_user(data.user_id)
-
-            if user_exists != []:
-                return 1
-            else:
-                user_post = await conn.prisma.user.create({"birth_date": data.birth_date, "email": data.email, "last_name": data.last_name, "name": data.name, "password": encryptPassword(data.password)})
+# "birth_date": json.dumps(data.birth_date, default=UserController._serialize_datetime)
+            user_data = {"email":data.email, "last_name":data.last_name, "name":data.name, "password":encryptPassword(data.password)}
+            user_post = await conn.prisma.user.create(user_data)
         except Exception as e:
             print(e)
             return False
         else:
-            return user_post
+            return user_data
             
     @staticmethod
     async def update(data: User) -> None:
@@ -74,3 +72,8 @@ class UserController:
         else:
             # return user_post
             pass
+
+    @staticmethod
+    def _serialize_datetime(obj):
+        if isinstance(obj, datetime):
+            return obj.isoformat()

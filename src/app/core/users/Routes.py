@@ -57,12 +57,11 @@ async def create_user(data: User):
                 status_code=status.HTTP_409_CONFLICT,
                 detail="The user already exist"
             )
-        else:
+        # else:
             # email_data = {'email': user_created.email, 'message': f'{
                 # user_created.username}, le damos la bienvenida al sistema de gestión de imágenes'}
             # call email service
             # email_response = post(f'{API_EMAIL}/email', json=email_data)
-            pass
             # if email_response.status_code != 200:
             #     raise HTTPException(
             #         status_code=status.HTTP_409_CONFLICT,
