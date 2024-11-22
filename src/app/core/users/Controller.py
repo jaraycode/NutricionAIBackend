@@ -1,7 +1,8 @@
 from .model import User
 from prisma.errors import RecordNotFoundError
-from datetime import datetime
+from datetime import datetime, date
 from ...Utils.auth import encryptPassword
+from ...Utils.errors import UserDoesExistsError
 from ...Config.db import conn
 import json
 
@@ -10,6 +11,8 @@ class UserController:
     async def get_all()-> list[User]:
         try:
             users: list[User] = await conn.prisma.user.find_many()
+            for user in users:
+                user.birth_date = user.birth_date.strftime("%Y-%m-%d")
         except RecordNotFoundError:
             return []
         except Exception as e:
@@ -22,6 +25,20 @@ class UserController:
     async def get_user(id: int) -> User:
         try:
             user: User = await conn.prisma.user.find_many(where={"user_id": id})
+            user.birth_date = user.birth_date.strftime("%Y-%m-%d")
+        except RecordNotFoundError:
+            return []
+        except Exception as e:
+            print(e)
+            return False
+        else:
+            return user
+
+    @staticmethod
+    async def get_user_by_email(email: str) -> User:
+        try:
+            user: User = await conn.prisma.user.find_many(where={"email": email})
+            user.birth_date = user.birth_date.strftime("%Y-%m-%d")
         except RecordNotFoundError:
             return []
         except Exception as e:
@@ -33,14 +50,19 @@ class UserController:
     @staticmethod
     async def create(data: User) -> None:
         try:
-# "birth_date": json.dumps(data.birth_date, default=UserController._serialize_datetime)
-            user_data = {"email":data.email, "last_name":data.last_name, "name":data.name, "password":encryptPassword(data.password)}
+            if UserController.get_user_by_email(data.email) != []:
+                raise UserDoesExistsError()
+
+            user_data = {"email":data.email, "last_name":data.last_name, "name":data.name,"birth_date":datetime.strptime(data.birth_date.strftime("%Y-%m-%d"), "%Y-%m-%d"), "password":encryptPassword(data.password)}
+
             user_post = await conn.prisma.user.create(user_data)
+        except UserDoesExistsError:
+            return 1
         except Exception as e:
             print(e)
             return False
         else:
-            return user_data
+            return user_post
             
     @staticmethod
     async def update(data: User) -> None:

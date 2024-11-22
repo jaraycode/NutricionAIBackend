@@ -3,15 +3,8 @@ from datetime import datetime
 
 class User(BaseModel):
     user_id: int
-    name: str
-    last_name: str
-    email: str
-    password: str
-    # birth_date: datetime
-
-class User_payload(BaseModel):
-    name: str
-    last_name: str
-    email: str
-    password: str
-    birth_date: datetime
+    name: str = "Jonas"
+    last_name: str = "Aray"
+    email: str = "jonasaray12@gmail.com"
+    password: str = "yovita1234"
+    birth_date: datetime = datetime.now()
