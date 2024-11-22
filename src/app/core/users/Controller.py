@@ -2,7 +2,7 @@ from .model import User
 from prisma.errors import RecordNotFoundError
 from datetime import datetime, date
 from ...Utils.auth import encryptPassword
-from ...Utils.errors import UserDoesExistsError
+from ...Utils.errors import UserDoesExistsError, UserDoesNotExistsError
 from ...Config.db import conn
 import json
 
@@ -25,8 +25,13 @@ class UserController:
     async def get_user(id: int) -> User:
         try:
             user: User = await conn.prisma.user.find_many(where={"user_id": id})
+            # print(user[0])
+            if user == []:
+                raise UserDoesNotExistsError()
+
+            user = user[0]
             user.birth_date = user.birth_date.strftime("%Y-%m-%d")
-        except RecordNotFoundError:
+        except UserDoesNotExistsError:
             return []
         except Exception as e:
             print(e)
@@ -37,7 +42,7 @@ class UserController:
     @staticmethod
     async def get_user_by_email(email: str) -> User:
         try:
-            user: User = await conn.prisma.user.find_many(where={"email": email})
+            user: User = await conn.prisma.user.find_many(where={"email": email})[0]
             user.birth_date = user.birth_date.strftime("%Y-%m-%d")
         except RecordNotFoundError:
             return []
@@ -50,7 +55,7 @@ class UserController:
     @staticmethod
     async def create(data: User) -> None:
         try:
-            if UserController.get_user_by_email(data.email) != []:
+            if await UserController.get_user_by_email(data.email) != []:
                 raise UserDoesExistsError()
 
             user_data = {"email":data.email, "last_name":data.last_name, "name":data.name,"birth_date":datetime.strptime(data.birth_date.strftime("%Y-%m-%d"), "%Y-%m-%d"), "password":encryptPassword(data.password)}
@@ -65,19 +70,21 @@ class UserController:
             return user_post
             
     @staticmethod
-    async def update(data: User) -> None:
+    async def update(data: User, id: int) -> None:
         try:
-            user_exists = await UserController.get_user(data.user_id)
+            if await UserController.get_user(id) == []:
+                raise RecordNotFoundError(data, message=f"User by id {id} is not found")
+            user_data = {"email":data.email, "last_name":data.last_name, "name":data.name,"birth_date":datetime.strptime(data.birth_date.strftime("%Y-%m-%d"), "%Y-%m-%d"), "password":encryptPassword(data.password)}
 
-            if user_exists == []:
-                raise RecordNotFoundError(data, message="User does not exists")
-            else:
-                user_post = await conn.prisma.user.create({"birth_date": data.birth_date, "email": data.email, "last_name": data.last_name, "name": data.name, "password": encryptPassword(data.password)})
+            user_update = await conn.prisma.user.update(data=user_data)
+        except RecordNotFoundError as e:
+            print(e)
+            return 1
         except Exception as e:
             print(e)
             return False
         else:
-            return user_post
+            return user_update
 
     @staticmethod
     async def delete(id: int) -> None:
