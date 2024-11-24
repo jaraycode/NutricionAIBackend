@@ -8,10 +8,8 @@ import uvicorn
 def init_app() -> FastAPI:
     @asynccontextmanager
     async def lifespan(app:FastAPI):
-        print("Server started")
         await conn.connect()
         yield
-        print("Shutdown server")
         await conn.disconnect()
     app = FastAPI(title="NutricionBackend", description="Backend side of the application that looks for your health", version="0.0.1", lifespan=lifespan)
     app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_credentials=True, allow_methods=["*"], allow_headers=["*"])
