@@ -1,10 +1,7 @@
 from fastapi import APIRouter, Path, status, Response, HTTPException
 from .model import User
 from ...Utils.models import ResponseSchema
-from ...Utils.auth import signJWT
 from .Controller import UserController
-from requests import post
-from os import getenv
 
 router = APIRouter(
     prefix="/user",
@@ -14,7 +11,6 @@ router = APIRouter(
 @router.get(path="", response_model=ResponseSchema, response_model_exclude_none=True)
 async def get_all():
     try:
-        # get all users
         data = await UserController.get_all()
 
         if data is False:
