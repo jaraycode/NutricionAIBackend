@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Path, status, Response, HTTPException
 from .model import User
 from ...Utils.models import ResponseSchema
-from .Controller import UserController
+from .Services import UserService
 
 router = APIRouter(
     prefix="/user",
@@ -11,7 +11,7 @@ router = APIRouter(
 @router.get(path="", response_model=ResponseSchema, response_model_exclude_none=True)
 async def get_all():
     try:
-        data = await UserController.get_all()
+        data = await UserService.get_all()
 
         if data is False:
             raise HTTPException(
@@ -35,8 +35,7 @@ async def get_all():
 @router.get(path="/{id}", response_model=ResponseSchema, response_model_exclude_none=True)
 async def get_user(id: str = Path(..., alias="id")):
     try:
-        # get all users
-        data = await UserController.get_user(int(id, 10))
+        data = await UserService.get_user(int(id, 10))
 
         if data is False:
             raise HTTPException(
@@ -60,7 +59,7 @@ async def get_user(id: str = Path(..., alias="id")):
 @router.post(path="", response_model=ResponseSchema, response_model_exclude_none=True)
 async def create_user(data: User):
     try:
-        user_created = await UserController.create(data)
+        user_created = await UserService.create(data)
 
         # API_EMAIL = getenv("API_EMAIL")
 
@@ -95,19 +94,19 @@ async def create_user(data: User):
         print(e)
         return Response(ResponseSchema(detail="An unexpected error occurred").model_dump_json(), status_code=status.HTTP_400_BAD_REQUEST, media_type="application/json")
     else:
-        return Response(ResponseSchema(detail="Successfully created, check your email", result=data).model_dump_json(), status_code=status.HTTP_201_CREATED, media_type="application/json")
+        return Response(ResponseSchema(detail="Successfully created, check your email", result=user_created).model_dump_json(), status_code=status.HTTP_201_CREATED, media_type="application/json")
 
 @router.put(path="/{id}", response_model=ResponseSchema, response_model_exclude_none=True)
 async def update_user(data: User, id: str = Path(..., alias="id")):
     try:
-        user_created = await UserController.update(data, int(id, 10))
+        user_updated = await UserService.update(data, int(id, 10))
 
-        if user_created is False:
+        if user_updated is False:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="An unexpected error occurred"
             )
-        elif user_created == 1:
+        elif user_updated == 1:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="The user does not exist"
@@ -119,12 +118,12 @@ async def update_user(data: User, id: str = Path(..., alias="id")):
         print(e)
         return Response(ResponseSchema(detail="An unexpected error occurred").model_dump_json(), status_code=status.HTTP_400_BAD_REQUEST, media_type="application/json")
     else:
-        return Response(ResponseSchema(detail="Successfully created, check your email", result=data).model_dump_json(), status_code=status.HTTP_200_OK, media_type="application/json")
+        return Response(ResponseSchema(detail="Successfully created, check your email", result=user_updated).model_dump_json(), status_code=status.HTTP_200_OK, media_type="application/json")
 
 @router.delete(path="/{id}", response_model=ResponseSchema, response_model_exclude_none=True)
 async def delete_user(id: str = Path(..., alias="id")):
     try:
-        user_created = await UserController.delete(int(id, 10))
+        user_created = await UserService.delete(int(id, 10))
 
         if user_created is False:
             raise HTTPException(

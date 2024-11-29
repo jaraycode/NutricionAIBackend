@@ -5,7 +5,7 @@ from ...Utils.auth import encryptPassword
 from ...Utils.errors import UserDoesExistsError, UserDoesNotExistsError
 from ...Config.db import conn
 
-class UserController:
+class UserService:
     @staticmethod
     async def get_all() -> list[User]:
         try:
@@ -57,7 +57,7 @@ class UserController:
     @staticmethod
     async def create(data: UserDTO) -> User | bool | int:
         try:
-            if await UserController.get_user_by_email(data.email) != []:
+            if await UserService.get_user_by_email(data.email) != []:
                 raise UserDoesExistsError()
 
             user_data = {"email":data.email, "last_name":data.last_name, "name":data.name,"birth_date":datetime.strptime(data.birth_date.strftime("%Y-%m-%d"), "%Y-%m-%d"), "password":encryptPassword(data.password)}
@@ -74,7 +74,7 @@ class UserController:
     @staticmethod
     async def update(data: UserDTO, id: int) -> None:
         try:
-            user_exists = await UserController.get_user(id)
+            user_exists = await UserService.get_user(id)
 
             if user_exists == []:
                 raise UserDoesNotExistsError()
@@ -93,7 +93,7 @@ class UserController:
     @staticmethod
     async def delete(id: int) -> None:
         try:
-            user_exists = await UserController.get_user(id)
+            user_exists = await UserService.get_user(id)
 
             if user_exists == []:
                 raise UserDoesNotExistsError()

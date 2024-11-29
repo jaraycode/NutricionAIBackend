@@ -7,7 +7,7 @@ class User(BaseModel):
     last_name: str = "Aray"
     email: str = "jonasaray12@gmail.com"
     password: str = "yovita1234"
-    birth_date: datetime = datetime.now()
+    birth_date: datetime | str = datetime.now()
 
 class UserDTO(BaseModel):
     name: str = "Jonas"
