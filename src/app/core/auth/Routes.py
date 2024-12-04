@@ -6,7 +6,7 @@ from .Services import LoginService
 from requests import post
 from os import getenv
 from typing import Annotated
-from fastapi_jwt_auth import AuthJWT
+# from fastapi_jwt_auth import AuthJWT
 
 router = APIRouter(
     prefix="/auth",
@@ -14,7 +14,7 @@ router = APIRouter(
 )
 
 @router.post(path="/register", response_model=ResponseSchema, response_model_exclude_none=True)
-async def register_user(data: User, auth: AuthJWT = Depends()):
+async def register_user(data: User):
     try:
         user_registed = await LoginService.register(data)
 
