@@ -1,6 +1,6 @@
 from .model import LogInDTO, LogInResponse
 from ..users.model import UserDTO, User
-from ..users.Services import UserService
+from ..users.Services import UserService # type: ignore
 from ...Utils.auth import generateJWToken, validatePassword
 
 class LoginService:
