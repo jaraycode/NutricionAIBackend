@@ -3,6 +3,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from src.app.Config.db import conn
 from src.app.core.users.Routes import router as user
+from src.app.core.auth.Routes import router as login
 import uvicorn
 
 def init_app() -> FastAPI:
@@ -18,7 +19,9 @@ def init_app() -> FastAPI:
     def home() -> str:
         return "Nutricion Backend"
 
-    app.include_router(user)
+    for router in [user, login]:
+        app.include_router(router)
+
     return app
 
 app = init_app()
