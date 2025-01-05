@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Path, status, Response, HTTPException
-from .model import User
+from .model import User, UserDTO
 from ...Utils.models import ResponseSchema
 from .Services import UserService
 
@@ -57,7 +57,7 @@ async def get_user(id: str = Path(..., alias="id")):
         return Response(ResponseSchema(detail="Successfully retreived", result=data).model_dump_json(), status_code=status.HTTP_200_OK, media_type="application/json")
 
 @router.post(path="", response_model=ResponseSchema, response_model_exclude_none=True)
-async def create_user(data: User):
+async def create_user(data: UserDTO):
     try:
         user_created = await UserService.create(data)
 
@@ -97,7 +97,7 @@ async def create_user(data: User):
         return Response(ResponseSchema(detail="Successfully created, check your email", result=user_created).model_dump_json(), status_code=status.HTTP_201_CREATED, media_type="application/json")
 
 @router.put(path="/{id}", response_model=ResponseSchema, response_model_exclude_none=True)
-async def update_user(data: User, id: str = Path(..., alias="id")):
+async def update_user(data: UserDTO, id: str = Path(..., alias="id")):
     try:
         user_updated = await UserService.update(data, int(id, 10))
 
@@ -123,14 +123,14 @@ async def update_user(data: User, id: str = Path(..., alias="id")):
 @router.delete(path="/{id}", response_model=ResponseSchema, response_model_exclude_none=True)
 async def delete_user(id: str = Path(..., alias="id")):
     try:
-        user_created = await UserService.delete(int(id, 10))
+        user_deleted = await UserService.delete(int(id, 10))
 
-        if user_created is False:
+        if user_deleted is False:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="An unexpected error occurred"
             )
-        elif user_created == 1:
+        elif user_deleted == 1:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="The user does not exist"

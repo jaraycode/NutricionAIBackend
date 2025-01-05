@@ -19,7 +19,7 @@ class LoginService:
             print(e)
             return False
         else:
-            return LogInResponse(email=user_retrived.email, token=generateJWToken(user_retrived.email))
+            return LogInResponse(id=user_retrived.user_id, token=generateJWToken(user_retrived.email))
 
     @staticmethod
     async def register(data: UserDTO) -> User | bool | int:
