@@ -26,15 +26,15 @@ model User {
 
 model Role {
     id   Int    @id @default(autoincrement())
-    name String
+    name String @unique
     User User[]
 }
 
 model Food {
     id           Int            @id @default(autoincrement())
     name         String
-    foodGr       Decimal
-    calories     Decimal
+    foodGr       Float
+    calories     Float
     registerFood RegisterFood[]
 }
 
@@ -47,7 +47,7 @@ model RegisterFood {
     id     DateTime @default(now())
     userId Int
     foodId Int
-    foodGr Decimal
+    foodGr Float
 
     user User @relation(fields: [userId], references: [user_id])
     food Food @relation(fields: [foodId], references: [id])
