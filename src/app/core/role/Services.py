@@ -72,7 +72,7 @@ class RoleService:
                 raise RoleDoesNotExistsError()
 
 
-            role_update = await conn.prisma.role.update(data=data, where={"user_id":id})
+            role_update = await conn.prisma.role.update(data=data, where={"id":id})
         except RoleDoesNotExistsError as e:
             return 1
         except Exception as e:
@@ -89,7 +89,7 @@ class RoleService:
             if role_exists == []:
                 raise RoleDoesNotExistsError()
             else:
-                role_deleted = await conn.prisma.role.delete(where={"user_id":id})
+                role_deleted = await conn.prisma.role.delete(where={"id":id})
         except RoleDoesNotExistsError as e:
             return 1
         except Exception as e:

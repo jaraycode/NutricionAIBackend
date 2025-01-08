@@ -5,6 +5,7 @@ from src.app.Config.db import conn
 from src.app.core.users.Routes import router as user
 from src.app.core.auth.Routes import router as login
 from src.app.core.role.Routes import router as role
+from src.app.core.food.Routes import router as food
 import uvicorn
 
 def init_app() -> FastAPI:
@@ -20,7 +21,7 @@ def init_app() -> FastAPI:
     def home() -> str:
         return "Nutricion Backend"
 
-    for router in [user, login, role]:
+    for router in [user, login, role, food]:
         app.include_router(router)
 
     return app
