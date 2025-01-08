@@ -3,7 +3,8 @@ from prisma.errors import RecordNotFoundError
 from ...Utils.errors import FoodDoesExistsError, FoodDoesNotExistsError
 from ...Config.db import conn
 import tensorflow as tf
-from tensorflow import convert_to_tensor, Tensor, models
+from tensorflow import convert_to_tensor, Tensor 
+from tensorflow.keras import models #type:ignore
 import pandas as pd
 import numpy as np
 import cv2
