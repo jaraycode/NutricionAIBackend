@@ -1,7 +1,9 @@
-from fastapi import APIRouter, Path, status, Response, HTTPException
+from fastapi import APIRouter, Path, status, Response, HTTPException, UploadFile, File
 from .model import FoodDTO
 from ...Utils.models import ResponseSchema
 from .Services import FoodService
+import cv2
+import numpy as np
 
 router = APIRouter(
     prefix="/food",
@@ -57,8 +59,17 @@ async def get_food(id: str = Path(..., alias="id")):
         return Response(ResponseSchema(detail="Successfully retreived", result=data).model_dump_json(), status_code=status.HTTP_200_OK, media_type="application/json")
 
 @router.post(path="/image", response_model=ResponseSchema, response_model_exclude_none=True)
-async def get_food_by_image(img):
+async def get_food_by_image(file: UploadFile = File(...)):
     try:
+
+        if file.content_type not in ["image/jpeg", "image/png"]:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="File not in the right format, needed image"
+            )
+            
+        content = file.read()
+        img = np.frombuffer(content, np.uint8)
         data = await FoodService.get_food_by_image(img=img)
 
         if data is False:
