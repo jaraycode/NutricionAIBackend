@@ -5,3 +5,4 @@ dataset/food-101/*
 .pytest_cache
 userfullcommands.txt
 *.h5
+*.keras

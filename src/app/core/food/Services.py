@@ -4,12 +4,19 @@ from ...Utils.errors import FoodDoesExistsError, FoodDoesNotExistsError
 from ...Config.db import conn
 import tensorflow as tf
 from tensorflow import convert_to_tensor, Tensor 
-from tensorflow.keras import models #type:ignore
+from tensorflow.keras import models, layers #type:ignore
+import tensorflow as tf
 import pandas as pd
 import numpy as np
-import cv2
+import cv2, os
+
+MODEL = "src/model/my_model.keras"
+model = models.load_model(os.path.join(MODEL))
+
 
 class FoodService:
+    LABELS = "dataset/vista_minable/meta"
+
     @staticmethod
     async def get_all() -> list[Food]:
         try:
@@ -58,11 +65,14 @@ class FoodService:
     async def get_food_by_image(img) -> Food: # service to use for the image
         try:
             img = cv2.resize(img, (100, 100))
-            ds_img = convert_to_tensor(list(map(FoodService._toFloat, img)), tf.Float32)
+            img = img.reshape((1,100,100,3))
+            img = list(map(FoodService._toFloat, img))
+            ds_img = convert_to_tensor(img, tf.float32)
 
-            df_labels = pd.read_csv("../../../dataset/vista_minable/meta/labels.csv")
+            df_labels = pd.read_csv(os.path.join(FoodService.LABELS, "labels.csv"))
             df_labels.index = range(1, len(df_labels) + 1)
-            foodName = df_labels.iloc[FoodService._model(ds=ds_img)].values[0]
+            response = FoodService._model(ds=ds_img)
+            foodName = df_labels.iloc[response].values[0]
 
             food: Food = await FoodService.get_food_by_name(foodName)
         except Exception as e:
@@ -127,6 +137,5 @@ class FoodService:
 
     @staticmethod
     def _model(ds: Tensor):
-        m = models.load_model("../../Utils/trainnedModel/nutricionAIModel.h5")
-        prediction = m.predict(ds)
+        prediction = model.predict(ds)
         return np.argmax(prediction[0])

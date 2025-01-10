@@ -68,8 +68,30 @@ async def get_food_by_image(file: UploadFile = File(...)):
                 detail="File not in the right format, needed image"
             )
             
-        content = file.read()
+        content = await file.read()
         img = np.frombuffer(content, np.uint8)
+        img = cv2.imdecode(img, cv2.IMREAD_COLOR)
+        print(img.shape)
+        # num_elements = img.size
+
+        # if num_elements % 3 != 0:
+        #     raise HTTPException(
+        #         status_code=status.HTTP_400_BAD_REQUEST,
+        #         detail="Image cannot be a 3D shape one"
+        #     )
+        
+        # num_pixels = num_elements // 3
+
+        # possible_dims = []
+        # for i in range(1, int(np.sqrt(num_pixels)) + 1):
+        #     if num_pixels % i == 0:
+        #         possible_dims.append((i, num_pixels // i))
+            
+        # selected_dims = min(possible_dims, key=lambda x: abs(x[0] - x[1]))
+        
+        # img = img.reshape((selected_dims[0], selected_dims[1], 3))
+        # print(img.shape)
+                
         data = await FoodService.get_food_by_image(img=img)
 
         if data is False:
@@ -116,7 +138,7 @@ async def create_food(data: FoodDTO):
         return Response(ResponseSchema(detail="Successfully created, check your email", result=food_created).model_dump_json(), status_code=status.HTTP_201_CREATED, media_type="application/json")
 
 @router.put(path="/{id}", response_model=ResponseSchema, response_model_exclude_none=True)
-async def update_role(data: FoodDTO, id: str = Path(..., alias="id")):
+async def update_food(data: FoodDTO, id: str = Path(..., alias="id")):
     try:
         food_updated = await FoodService.update(data, int(id, 10))
 
@@ -140,7 +162,7 @@ async def update_role(data: FoodDTO, id: str = Path(..., alias="id")):
         return Response(ResponseSchema(detail="Successfully created, check your email", result=food_updated).model_dump_json(), status_code=status.HTTP_200_OK, media_type="application/json")
 
 @router.delete(path="/{id}", response_model=ResponseSchema, response_model_exclude_none=True)
-async def delete_role(id: str = Path(..., alias="id")):
+async def delete_food(id: str = Path(..., alias="id")):
     try:
         food_deleted = await FoodService.delete(int(id, 10))
 
