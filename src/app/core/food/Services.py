@@ -1,10 +1,10 @@
-from .model import Food, FoodDTO
+from .model import Food, FoodDTO, FoodFromModel
 from prisma.errors import RecordNotFoundError
 from ...Utils.errors import FoodDoesExistsError, FoodDoesNotExistsError
 from ...Config.db import conn
 import tensorflow as tf
 from tensorflow import convert_to_tensor, Tensor 
-from tensorflow.keras import models, layers #type:ignore
+from tensorflow.keras import models #type:ignore
 import tensorflow as tf
 import pandas as pd
 import numpy as np
@@ -62,7 +62,7 @@ class FoodService:
             return food
 
     @staticmethod
-    async def get_food_by_image(img) -> Food: # service to use for the image
+    async def get_food_by_image(img) -> FoodFromModel: # service to use for the image
         try:
             img = cv2.resize(img, (100, 100))
             img = img.reshape((1,100,100,3))
@@ -74,7 +74,10 @@ class FoodService:
             response = FoodService._model(ds=ds_img)
             foodName = df_labels.iloc[response].values[0]
 
-            food: Food = await FoodService.get_food_by_name(foodName)
+            print(foodName)
+            food: FoodFromModel = FoodFromModel(name=foodName)
+
+            # food: Food = await FoodService.get_food_by_name(foodName)
         except Exception as e:
             print(e)
             return False

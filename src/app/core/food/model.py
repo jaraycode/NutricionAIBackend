@@ -10,3 +10,7 @@ class FoodDTO(BaseModel):
     name: str = "pollo"
     foodGr: float = 100.00
     calories: float = 100.00
+
+
+class FoodFromModel(BaseModel):
+    name: str = "pollo"
