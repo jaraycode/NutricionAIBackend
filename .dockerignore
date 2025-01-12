@@ -1,0 +1,16 @@
+.env
+__pycache__
+venv/*
+dataset/food-101/*
+.pytest_cache
+userfullcommands.txt
+.vscode
+*.md
+*.ipynb
+src/app/Prisma/migrations/*
+postgres/*
+.gitignore
+src/app/__pycache__
+src/app/Config/__pycache__
+src/app/Utils/__pycache__
+src/app/core/*/__pycache__

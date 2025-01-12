@@ -1,0 +1,49 @@
+generator client {
+    provider             = "prisma-client-py"
+    recursive_type_depth = 5
+}
+
+datasource db {
+    provider = "postgresql"
+    url      = env("DATABASE_URL")
+}
+
+enum Role {
+    USER
+    ADMIN
+}
+
+model User {
+    user_id       Int            @id @default(autoincrement())
+    config_id     Int            @unique
+    name          String
+    email         String         @unique
+    password      String
+    createAt      DateTime       @default(now())
+    updateAt      DateTime       @updatedAt
+    role          Role           @default(USER)
+    food          Food[]
+    Configuration Configuration? @relation(fields: [config_id], references: [id])
+
+    @@map("users")
+}
+
+model Food {
+    id          Int     @id @default(autoincrement())
+    user_id     Int
+    name        String
+    foodGr      Float
+    calories    Float
+    fat         Float
+    protein     Float
+    Description String?
+    user        User    @relation(fields: [user_id], references: [user_id])
+}
+
+model Configuration {
+    id             Int   @id @default(autoincrement())
+    caloriesPerDay Float
+    fatPerDay      Float
+    proteinPerDay  Float
+    User           User?
+}
