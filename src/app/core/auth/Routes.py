@@ -43,7 +43,7 @@ async def register_user(data: User):
 
 
 @router.post(path="/login", response_model=ResponseSchema, response_model_exclude_none=True)
-async def register_user(data: LogInDTO):
+async def login(data: LogInDTO):
     try:
         user_logged = await LoginService.logIn(data)
 

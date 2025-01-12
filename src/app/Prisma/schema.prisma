@@ -8,49 +8,42 @@ datasource db {
     url      = env("DATABASE_URL")
 }
 
+enum Role {
+    USER
+    ADMIN
+}
+
 model User {
-    user_id      Int            @id @default(autoincrement())
-    roleId       Int
-    name         String         @db.VarChar(100)
-    last_name    String         @db.VarChar(100)
-    email        String         @unique @db.VarChar(100)
-    password     String         @db.VarChar(255)
-    birth_date   DateTime
-    createAt     DateTime       @default(now())
-    updateAt     DateTime       @updatedAt
-    role         Role           @relation(fields: [roleId], references: [id])
-    registerFood RegisterFood[]
+    user_id       Int            @id @default(autoincrement())
+    config_id     Int            @unique
+    name          String
+    email         String         @unique
+    password      String
+    createAt      DateTime       @default(now())
+    updateAt      DateTime       @updatedAt
+    role          Role           @default(USER)
+    food          Food[]
+    Configuration Configuration? @relation(fields: [config_id], references: [id])
 
     @@map("users")
 }
 
-model Role {
-    id   Int    @id @default(autoincrement())
-    name String @unique
-    User User[]
-}
-
 model Food {
-    id           Int            @id @default(autoincrement())
-    name         String
-    foodGr       Float
-    calories     Float
-    registerFood RegisterFood[]
+    id          Int     @id @default(autoincrement())
+    user_id     Int
+    name        String
+    foodGr      Float
+    calories    Float
+    fat         Float
+    protein     Float
+    Description String?
+    user        User    @relation(fields: [user_id], references: [user_id])
 }
 
 model Configuration {
-    id   Int  @id @default(autoincrement())
-    info Json
-}
-
-model RegisterFood {
-    id     DateTime @default(now())
-    userId Int
-    foodId Int
-    foodGr Float
-
-    user User @relation(fields: [userId], references: [user_id])
-    food Food @relation(fields: [foodId], references: [id])
-
-    @@id([id, userId, foodId])
+    id             Int   @id @default(autoincrement())
+    caloriesPerDay Float
+    fatPerDay      Float
+    proteinPerDay  Float
+    User           User?
 }

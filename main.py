@@ -6,7 +6,8 @@ from src.app.core.users.Routes import router as user
 from src.app.core.auth.Routes import router as login
 from src.app.core.role.Routes import router as role
 from src.app.core.food.Routes import router as food
-import uvicorn
+from src.app.core.config.Routes import router as config
+import uvicorn, os
 
 def init_app() -> FastAPI:
     @asynccontextmanager
@@ -21,7 +22,7 @@ def init_app() -> FastAPI:
     def home() -> str:
         return "Nutricion Backend"
 
-    for router in [user, login, role, food]:
+    for router in [user, login, role, food, config]:
         app.include_router(router)
 
     return app
@@ -30,4 +31,4 @@ app = init_app()
 
 
 if __name__ == "__main__":
-    uvicorn.run(app="main:app", host="0.0.0.0", port=8888, reload=True)
+    uvicorn.run(app="main:app", host=os.getenv("APP_HOST"), port=int(os.getenv("APP_PORT")), reload=True)

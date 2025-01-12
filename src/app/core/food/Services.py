@@ -47,6 +47,22 @@ class FoodService:
             return role
 
     @staticmethod
+    async def get_food_by_user_id(id: int) -> Food:
+        try:
+            food: Food = await conn.prisma.food.find_many(where={"user_id": id})
+
+            if food == []:
+                raise FoodDoesNotExistsError()
+
+        except FoodDoesNotExistsError:
+            return []
+        except Exception as e:
+            print(e)
+            return False
+        else:
+            return food
+
+    @staticmethod
     async def get_food_by_name(name: str) -> Food: # service to use for the image
         try:
             foods: list[Food] = await conn.prisma.food.find_many(where={"name": name})

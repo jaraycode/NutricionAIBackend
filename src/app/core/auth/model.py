@@ -6,5 +6,5 @@ class LogInDTO(BaseModel):
 
 
 class LogInResponse(BaseModel):
-    email: str = "jonasaray12@gmail.com"
+    id: int = 1
     token: str = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3MzAyODY0NDMsInVzZXJuYW1lIjoiam9uYXNhcmExMkBnbWFpbC5jb20ifQ.YWSyBd1sRM6SGOTwrkWl6axX0UWYik_P5SkPuUPWnI8"

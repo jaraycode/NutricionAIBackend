@@ -1,4 +1,5 @@
 from .model import User, UserDTO
+from ..config.Services import ConfigService
 from prisma.errors import RecordNotFoundError
 from datetime import datetime
 from ...Utils.auth import encryptPassword
@@ -9,9 +10,7 @@ class UserService:
     @staticmethod
     async def get_all() -> list[User]:
         try:
-            users: list[User] = await conn.prisma.user.find_many()
-            for user in users:
-                user.birth_date = user.birth_date.strftime("%Y-%m-%d")
+            users: list[User] = await conn.prisma.user.find_many(include={"Configuration":True})
         except RecordNotFoundError:
             return []
         except Exception as e:
@@ -23,13 +22,12 @@ class UserService:
     @staticmethod
     async def get_user(id: int) -> User:
         try:
-            user: User = await conn.prisma.user.find_many(where={"user_id": id})
-            # print(user[0])
+            user: User = await conn.prisma.user.find_many(where={"user_id": id}, include={"Configuration":True, "food":True})
+
             if user == []:
                 raise UserDoesNotExistsError()
 
             user = user[0]
-            user.birth_date = user.birth_date.strftime("%Y-%m-%d")
         except UserDoesNotExistsError:
             return []
         except Exception as e:
@@ -41,13 +39,12 @@ class UserService:
     @staticmethod
     async def get_user_by_email(email: str) -> User:
         try:
-            users: User = await conn.prisma.user.find_many(where={"email": email})
+            users: User = await conn.prisma.user.find_many(where={"email": email}, include={"Configuration":True})
             
             if users == []:
                 return users
 
             user = users[0]
-            user.birth_date = user.birth_date.strftime("%Y-%m-%d")
         except Exception as e:
             print(e)
             return False
@@ -59,10 +56,13 @@ class UserService:
         try:
             if await UserService.get_user_by_email(data.email) != []:
                 raise UserDoesExistsError()
+            
+            config_created = await ConfigService.create(data=data.config)
 
-            user_data = {"email":data.email, "last_name":data.last_name, "name":data.name,"birth_date":datetime.strptime(data.birth_date.strftime("%Y-%m-%d"), "%Y-%m-%d"), "password":encryptPassword(data.password)}
+            user_data= {"config_id":config_created.id, "name":data.name, "email":data.email, "password":encryptPassword(data.password), "role":data.role}            
 
-            user_post = await conn.prisma.user.create(user_data)
+            print(config_created)
+            user_post = await conn.prisma.user.create(data=user_data)
         except UserDoesExistsError:
             return 1
         except Exception as e:
@@ -79,9 +79,9 @@ class UserService:
             if user_exists == []:
                 raise UserDoesNotExistsError()
 
-            user_data = {"email":data.email, "last_name":data.last_name, "name":data.name,"birth_date":datetime.strptime(data.birth_date.strftime("%Y-%m-%d"), "%Y-%m-%d"), "password":encryptPassword(data.password)}
+            config_update = await ConfigService.update(data=data.config, id=user_exists.config_id)
 
-            user_update = await conn.prisma.user.update(data=user_data, where={"user_id":id})
+            user_update = await conn.prisma.user.update(data={"name":data.name, "email":data.email, "password":user_exists.password, "role":user_exists.role}, where={"user_id":id})
         except UserDoesNotExistsError as e:
             return 1
         except Exception as e:
@@ -106,8 +106,3 @@ class UserService:
             return False
         else:
             return user_deleted
-
-    @staticmethod
-    def _serialize_datetime(obj) -> str:
-        if isinstance(obj, datetime):
-            return obj.isoformat()
