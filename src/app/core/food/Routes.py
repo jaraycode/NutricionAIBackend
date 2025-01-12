@@ -58,7 +58,7 @@ async def get_food(id: str = Path(..., alias="id")):
     else:
         return Response(ResponseSchema(detail="Successfully retreived", result=data).model_dump_json(), status_code=status.HTTP_200_OK, media_type="application/json")
 
-@router.get(path="/{id}", response_model=ResponseSchema, response_model_exclude_none=True)
+@router.get(path="/user/{id}", response_model=ResponseSchema, response_model_exclude_none=True)
 async def get_food_by_user_id(id: str = Path(..., alias="id")):
     try:
         data = await FoodService.get_food_by_user_id(int(id, 10))
@@ -95,35 +95,14 @@ async def get_food_by_image(file: UploadFile = File(...)):
         content = await file.read()
         img = np.frombuffer(content, np.uint8)
         img = cv2.imdecode(img, cv2.IMREAD_COLOR)
-        print(img.shape)
-        # num_elements = img.size
+        prediction = await FoodService.get_food_by_image(img=img)
 
-        # if num_elements % 3 != 0:
-        #     raise HTTPException(
-        #         status_code=status.HTTP_400_BAD_REQUEST,
-        #         detail="Image cannot be a 3D shape one"
-        #     )
-        
-        # num_pixels = num_elements // 3
-
-        # possible_dims = []
-        # for i in range(1, int(np.sqrt(num_pixels)) + 1):
-        #     if num_pixels % i == 0:
-        #         possible_dims.append((i, num_pixels // i))
-            
-        # selected_dims = min(possible_dims, key=lambda x: abs(x[0] - x[1]))
-        
-        # img = img.reshape((selected_dims[0], selected_dims[1], 3))
-        # print(img.shape)
-                
-        data = await FoodService.get_food_by_image(img=img)
-
-        if data is False:
+        if prediction is False:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Error retreiving data"
             )
-        elif data == []:
+        elif prediction == []:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="No food found"
@@ -135,7 +114,7 @@ async def get_food_by_image(file: UploadFile = File(...)):
         print(e)
         return Response(ResponseSchema(detail="Error retreiving data").model_dump_json(), status_code=status.HTTP_400_BAD_REQUEST, media_type="application/json")
     else:
-        return Response(ResponseSchema(detail="Successfully retreived", result=data).model_dump_json(), status_code=status.HTTP_200_OK, media_type="application/json")
+        return Response(ResponseSchema(detail="Successfully retreived", result=prediction).model_dump_json(), status_code=status.HTTP_200_OK, media_type="application/json")
 
 @router.post(path="", response_model=ResponseSchema, response_model_exclude_none=True)
 async def create_food(data: FoodDTO):
@@ -150,7 +129,12 @@ async def create_food(data: FoodDTO):
         elif food_created == 1:
             raise HTTPException(
                 status_code=status.HTTP_409_CONFLICT,
-                detail="The role already exist"
+                detail="The food already exist"
+            )
+        elif food_created == 2:
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail="The user does not exist"
             )
 
     except HTTPException as e:

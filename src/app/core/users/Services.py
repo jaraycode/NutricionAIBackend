@@ -22,7 +22,24 @@ class UserService:
     @staticmethod
     async def get_user(id: int) -> User:
         try:
-            user: User = await conn.prisma.user.find_many(where={"user_id": id}, include={"Configuration":True, "food":True})
+            user: User = await conn.prisma.user.find_many(where={"user_id": id}, include={"Configuration":True})
+
+            if user == []:
+                raise UserDoesNotExistsError()
+
+            user = user[0]
+        except UserDoesNotExistsError:
+            return []
+        except Exception as e:
+            print(e)
+            return False
+        else:
+            return user
+
+    @staticmethod
+    async def get_user_with_food_history(id: int) -> User:
+        try:
+            user: User = await conn.prisma.user.find_many(where={"user_id": id}, include={"food":True})
 
             if user == []:
                 raise UserDoesNotExistsError()

@@ -1,6 +1,7 @@
 from .model import Food, FoodDTO, FoodFromModel
+from ..users.Services import UserService
 from prisma.errors import RecordNotFoundError
-from ...Utils.errors import FoodDoesExistsError, FoodDoesNotExistsError
+from ...Utils.errors import FoodDoesExistsError, FoodDoesNotExistsError, UserDoesNotExistsError
 from ...Config.db import conn
 import tensorflow as tf
 from tensorflow import convert_to_tensor, Tensor 
@@ -32,24 +33,24 @@ class FoodService:
     @staticmethod
     async def get_food(id: int) -> Food:
         try:
-            food: Food = await conn.prisma.food.find_many(where={"id": id})
+            food: Food = await conn.prisma.food.find_many(where={"id": id}, include={"user": True})
 
             if food == []:
                 raise FoodDoesNotExistsError()
 
-            role = role[0]
+            food = food[0]
         except FoodDoesNotExistsError:
             return []
         except Exception as e:
             print(e)
             return False
         else:
-            return role
+            return food
 
     @staticmethod
     async def get_food_by_user_id(id: int) -> Food:
         try:
-            food: Food = await conn.prisma.food.find_many(where={"user_id": id})
+            food: Food = await conn.prisma.food.find_many(where={"user_id": id}, include={"user": True})
 
             if food == []:
                 raise FoodDoesNotExistsError()
@@ -63,7 +64,7 @@ class FoodService:
             return food
 
     @staticmethod
-    async def get_food_by_name(name: str) -> Food: # service to use for the image
+    async def get_food_by_name(name: str) -> Food:
         try:
             foods: list[Food] = await conn.prisma.food.find_many(where={"name": name})
             
@@ -90,10 +91,8 @@ class FoodService:
             response = FoodService._model(ds=ds_img)
             foodName = df_labels.iloc[response].values[0]
 
-            print(foodName)
             food: FoodFromModel = FoodFromModel(name=foodName)
 
-            # food: Food = await FoodService.get_food_by_name(foodName)
         except Exception as e:
             print(e)
             return False
@@ -103,28 +102,29 @@ class FoodService:
     @staticmethod
     async def create(data: FoodDTO) -> Food | bool | int:
         try:
-            if await FoodService.get_role_by_name(data.name) != []:
-                raise FoodDoesExistsError()
+            if await UserService.get_user(data.user_id) == []:
+                raise UserDoesNotExistsError()
 
-            role_post = await conn.prisma.user.create(data=data)
+            food_post = await conn.prisma.food.create(data={"name": data.name, "calories": data.calories, "fat": data.fat, "protein":data.protein, "foodGr": data.foodGr, "user_id": data.user_id, "Description": data.description})
         except FoodDoesExistsError:
             return 1
+        except UserDoesNotExistsError:
+            return 2
         except Exception as e:
             print(e)
             return False
         else:
-            return role_post
+            return food_post
             
     @staticmethod
     async def update(data: FoodDTO, id: int) -> None:
         try:
-            food_exists = await FoodService.get_role(id)
+            food_exists = await FoodService.get_food(id)
 
             if food_exists == []:
                 raise FoodDoesNotExistsError()
 
-
-            food_update = await conn.prisma.food.update(data=data, where={"id":id})
+            food_update = await conn.prisma.food.update(data={"name": data.name, "calories": data.calories, "fat": data.fat, "protein":data.protein, "foodGr": data.foodGr, "user_id": food_exists.user_id, "Description":data.description}, where={"id":id})
         except FoodDoesNotExistsError as e:
             return 1
         except Exception as e:
@@ -136,19 +136,19 @@ class FoodService:
     @staticmethod
     async def delete(id: int) -> None:
         try:
-            role_exists = await FoodService.get_food(id)
+            food_exists = await FoodService.get_food(id)
 
-            if role_exists == []:
+            if food_exists == []:
                 raise FoodDoesNotExistsError()
             else:
-                role_deleted = await conn.prisma.food.delete(where={"id":id})
+                food_deleted = await conn.prisma.food.delete(where={"id":id})
         except FoodDoesNotExistsError as e:
             return 1
         except Exception as e:
             print(e)
             return False
         else:
-            return role_deleted
+            return food_deleted
 
     @staticmethod
     def _toFloat(img):
