@@ -29,7 +29,7 @@ model User {
 }
 
 model Food {
-    id          Int     @id @default(autoincrement())
+    id          Int      @id @default(autoincrement())
     user_id     Int
     name        String
     foodGr      Float
@@ -37,7 +37,8 @@ model Food {
     fat         Float
     protein     Float
     Description String?
-    user        User    @relation(fields: [user_id], references: [user_id])
+    createAt    DateTime @default(now())
+    user        User     @relation(fields: [user_id], references: [user_id])
 }
 
 model Configuration {
