@@ -85,8 +85,8 @@ async def get_food_by_user_id(id: str = Path(..., alias="id")):
 @router.post(path="/image", response_model=ResponseSchema, response_model_exclude_none=True)
 async def get_food_by_image(file: UploadFile = File(...)):
     try:
-
         if file.content_type not in ["image/jpeg", "image/png"]:
+            print(file.content_type)
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="File not in the right format, needed image"

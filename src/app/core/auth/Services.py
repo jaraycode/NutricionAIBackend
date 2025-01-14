@@ -23,4 +23,10 @@ class LoginService:
 
     @staticmethod
     async def register(data: UserDTO) -> User | bool | int:
-        return UserService.create(data)
+        try:
+            user_created = await UserService.create(data)
+        except Exception as e:
+            print(e)
+            return False
+        else:
+            return LogInResponse(id=user_created.user_id, token=generateJWToken(user_created.email))

@@ -14,10 +14,6 @@ async def register_user(data: UserDTO):
     try:
         user_registed = await LoginService.register(data)
 
-        # generate token
-        # token = signJWT(user_logged.username)
-        # sign_out = SignToken(token=token, user=dict(user_logged))
-
         if user_registed is False:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
